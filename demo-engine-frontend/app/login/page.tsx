@@ -1,5 +1,6 @@
 "use client";
 import { useState } from "react";
+import RoundButton from "../components/RoundButton";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -48,19 +49,13 @@ export default function LoginPage() {
               required
             />
           </div>
-          <button
-            type="submit"
-            className="w-full px-4 py-2 text-white bg-blue-600 rounded-md hover:bg-blue-700"
-          >
-            Login
-          </button>
+          <RoundButton
+            text="Login"
+            color="bg-yellow-500"
+            width="w-100"
+            onClick={() => alert("Clicked!")}
+          />
         </form>
-        <p className="text-sm text-center text-gray-600">
-          Don't have an account?{" "}
-          <a href="/auth/signup" className="text-blue-600 hover:underline">
-            Sign up
-          </a>
-        </p>
       </div>
     </div>
   );
