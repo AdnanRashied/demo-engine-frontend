@@ -11,7 +11,7 @@ interface RoundButtonProps {
 
 const RoundButton: React.FC<RoundButtonProps> = ({
   text,
-  color = "bg-green",
+  color = "bg-green-500",
   width = "w-32",
   onClick,
 }) => {
