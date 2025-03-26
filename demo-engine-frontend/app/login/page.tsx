@@ -10,6 +10,7 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [isClient, setIsClient] = useState(false);
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState("");
 
   useEffect(() => {
@@ -37,6 +38,8 @@ export default function LoginPage() {
       }
     } catch (err) {
       setError("An error occurred. Please try again.");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -48,8 +51,10 @@ export default function LoginPage() {
         width="w-full max-w-md"
         height="h-120"
       >
-        <div className="">Sinch Logo</div>
         <div className="flex flex-col justify-center h-full">
+          <div className="text-center text-white font-bold text-lg">
+            Sinch Logo
+          </div>
           <Form onSubmit={handleSubmit}>
             <TextField
               label="Email"

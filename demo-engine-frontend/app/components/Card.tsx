@@ -19,14 +19,14 @@ const Card: React.FC<CardProps> = ({
   borderColor = "border-gray-300",
   width = "w-full max-w-md",
   height = "h-auto",
-  transition,
+  transition = "transition-all duration-300",
   className = "",
 }) => {
   return (
     <div
-      className={`p-6 rounded-xl border shadow-lg text-white ${transition} ${backgroundColor} ${borderColor} ${width} ${height} ${className} ${
-        gradient ? gradient : ""
-      }`}
+      className={`p-6 rounded-xl border shadow-lg text-white ${borderColor} ${width} ${height} ${className} ${
+        gradient ? gradient : backgroundColor
+      } ${transition}`}
     >
       {children}
     </div>
