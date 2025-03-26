@@ -8,23 +8,42 @@ import Form from "../components/Form";
 export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [isClient, setisClient] = useState(false);
+  const [isClient, setIsClient] = useState(false);
   const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
 
   useEffect(() => {
-    setisClient(true);
-  });
-  const handleSubmit = (event: React.FormEvent) => {
+    setIsClient(true);
+  }, []);
+
+  const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
-    console.log("Logging in.");
     setError("");
-    // ToDo: Error handler
+    setSuccess("");
+
+    try {
+      const response = await fetch("", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        setSuccess("Login successful!");
+      } else {
+        setError(data.error || "Login failed. Try again.");
+      }
+    } catch (err) {
+      setError("An error occurred. Please try again.");
+    }
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gray-100 p-4 bg-green-900">
+    <div className="flex min-h-screen items-center justify-center  p-4 bg-[#013e28]">
       <Card
-        backgroundColor="bg-green-800"
+        backgroundColor="bg-emerald-900"
         borderColor="border-yellow-500"
         width="w-full max-w-md"
         height="h-120"

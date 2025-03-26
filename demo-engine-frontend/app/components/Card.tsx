@@ -24,7 +24,7 @@ const Card: React.FC<CardProps> = ({
 }) => {
   return (
     <div
-      className={`p-6 rounded-xl border shadow-lg ${transition} ${backgroundColor} ${borderColor} ${width} ${height} ${className} ${
+      className={`p-6 rounded-xl border shadow-lg text-white ${transition} ${backgroundColor} ${borderColor} ${width} ${height} ${className} ${
         gradient ? gradient : ""
       }`}
     >
