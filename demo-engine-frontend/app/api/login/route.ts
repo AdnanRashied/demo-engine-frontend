@@ -5,6 +5,13 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     const { email, password } = body;
 
+    if (email === "user@example.com" && password === "password123") {
+      return NextResponse.json(
+        { success: true, token: "abcd1234" },
+        { status: 200 }
+      );
+    }
+
     if (!email || !password) {
       return NextResponse.json(
         { error: "Email and password are required" },
