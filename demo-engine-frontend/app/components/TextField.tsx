@@ -21,7 +21,7 @@ const TextField: React.FC<TextFieldProps> = ({
 }) => {
   return (
     <div className="w-full">
-      <label className="block text-sm font-medium text-gray-700">{label}</label>
+      <label className="block text-sm font-medium ext-white">{label}</label>
       <input
         type={type}
         value={value}
