@@ -7,6 +7,8 @@ interface RoundButtonProps {
   color?: string;
   width: string;
   onClick?: () => void;
+  type?: "button" | "submit" | "reset";
+  disabled?: boolean;
 }
 
 const RoundButton: React.FC<RoundButtonProps> = ({
@@ -14,11 +16,15 @@ const RoundButton: React.FC<RoundButtonProps> = ({
   color = "bg-green-500",
   width = "w-32",
   onClick,
+  type = "button",
+  disabled = false,
 }) => {
   return (
     <button
       className={`text-white font-semibold py-2 px-4 rounded-full ${color} ${width} hover:opacity-80 transition`}
       onClick={onClick}
+      type={type}
+      disabled={disabled}
     >
       {text}
     </button>

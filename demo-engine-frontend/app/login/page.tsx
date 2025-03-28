@@ -4,8 +4,10 @@ import RoundButton from "../components/RoundButton";
 import Card from "../components/Card";
 import TextField from "../components/TextField";
 import Form from "../components/Form";
+import { useRouter } from "next/navigation";
 
 export default function LoginPage() {
+  const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isClient, setIsClient] = useState(false);
@@ -21,18 +23,21 @@ export default function LoginPage() {
     event.preventDefault();
     setError("");
     setSuccess("");
+    setLoading(true);
 
     try {
-      const response = await fetch("", {
+      const response = await fetch("/api/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
+        credentials: "include",
       });
 
       const data = await response.json();
 
       if (response.ok) {
         setSuccess("Login successful!");
+        router.push("/dashboard");
       } else {
         setError(data.error || "Login failed. Try again.");
       }
@@ -72,7 +77,13 @@ export default function LoginPage() {
               placeholder="••••••••"
             />
             <div className="flex justify-center mt-4">
-              <RoundButton text="Login" color="bg-yellow-500" width="w-100" />
+              <RoundButton
+                text="Login"
+                color="bg-yellow-500"
+                width="w-100"
+                type="submit"
+                disabled={loading}
+              />
             </div>
           </Form>
         </div>
