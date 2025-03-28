@@ -1,23 +1,18 @@
 "use client";
-import { useState, useEffect } from "react";
-import RoundButton from "../components/RoundButton";
-import Card from "../components/Card";
-import TextField from "../components/TextField";
-import Form from "../components/Form";
+import { useState } from "react";
+import Form from "@/components/Form";
+import Card from "@/components/Card";
 import { useRouter } from "next/navigation";
+import TextField from "@/components/TextField";
+import RoundButton from "@/components/RoundButton";
 
 export default function LoginPage() {
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [isClient, setIsClient] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState("");
-
-  useEffect(() => {
-    setIsClient(true);
-  }, []);
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
@@ -33,16 +28,27 @@ export default function LoginPage() {
         credentials: "include",
       });
 
-      const data = await response.json();
-
-      if (response.ok) {
-        setSuccess("Login successful!");
-        router.push("/dashboard");
-      } else {
-        setError(data.error || "Login failed. Try again.");
+      if (!response.ok) {
+        // Try to parse the error response, but catch JSON parse errors
+        let errorMessage = "Login failed. Try again.";
+        try {
+          const data = await response.json();
+          errorMessage = data.error || errorMessage;
+        } catch (jsonError) {
+          console.error("Error parsing JSON response", jsonError);
+        }
+        throw new Error(errorMessage);
       }
+
+      setSuccess("Login successful!");
+      router.push("/dashboard");
     } catch (err) {
-      setError("An error occurred. Please try again.");
+      if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        setError("An unexpected error occurred. Please try again.");
+      }
+      console.error("Login error:", err);
     } finally {
       setLoading(false);
     }
