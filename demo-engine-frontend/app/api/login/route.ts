@@ -10,7 +10,7 @@ export async function POST(req: NextRequest) {
       console.log("Email and Password match");
       const token = "secure_random_token";
 
-      // ✅ Create an HttpOnly, Secure cookie
+      // Create an HttpOnly, Secure cookie ToDo
       const cookie = serialize("auth_token", token, {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
@@ -19,7 +19,7 @@ export async function POST(req: NextRequest) {
         maxAge: 60 * 60 * 24 * 7, // 1 week
       });
 
-      // ✅ Attach the Set-Cookie header to the response
+      // Attach the Set-Cookie header to the response ToDo
       const response = NextResponse.json({ success: true }, { status: 200 });
       response.headers.append("Set-Cookie", cookie);
 
