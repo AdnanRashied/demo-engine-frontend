@@ -19,7 +19,6 @@ export default function LoginPage() {
     setError("");
     setSuccess("");
     setLoading(true);
-
     try {
       const response = await fetch("/api/login", {
         method: "POST",
