@@ -1,30 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
-import { serialize } from "cookie";
+
+const GATEWAY_URL = "http://localhost:4000";
 
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
     const { email, password } = body;
-    // Testing
-    if (email === "user@example.com" && password === "password123") {
-      console.log("Email and Password match");
-      const token = "secure_random_token";
-
-      // Create an HttpOnly, Secure cookie ToDo
-      const cookie = serialize("auth_token", token, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        sameSite: "strict",
-        path: "/",
-        maxAge: 60 * 60 * 24 * 7, // 1 week
-      });
-
-      // Attach the Set-Cookie header to the response ToDo
-      const response = NextResponse.json({ success: true }, { status: 200 });
-      response.headers.append("Set-Cookie", cookie);
-
-      return response;
-    }
 
     if (!email || !password) {
       return NextResponse.json(
@@ -33,13 +14,47 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    return NextResponse.json(
-      { error: "Invalid email or password" },
-      { status: 401 }
+    // Forward the request to the NestJS Gateway authentication module
+    const response = await fetch(`${GATEWAY_URL}/authentication/login`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, password }),
+      credentials: "include",
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      return NextResponse.json(
+        { error: data.error || "Invalid email or password." },
+        { status: response.status }
+      );
+    }
+
+    const token = data.token;
+    if (!token) {
+      return NextResponse.json(
+        { error: "Something went wrong. Please try again." },
+        { status: 500 }
+      );
+    }
+
+    const responseWithCookie = NextResponse.json(
+      { success: true },
+      { status: 200 }
     );
+    responseWithCookie.headers.append(
+      "Set-Cookie",
+      `auth_token=${token}; HttpOnly; Secure=${
+        process.env.NODE_ENV === "production"
+      }; SameSite=Strict; Path=/; Max-Age=${60 * 60 * 24 * 7}`
+    );
+
+    return responseWithCookie;
   } catch (error) {
+    console.error("Error in login route:", error);
     return NextResponse.json(
-      { error: "Something went wrong" },
+      { error: "Something went wrong. Please try again." },
       { status: 500 }
     );
   }
