@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 
-const GATEWAY_URL = "http://localhost:4000";
+const GATEWAY_URL = process.env.GATEWAY_URL;
 
 export async function POST(req: NextRequest) {
   try {
@@ -14,8 +14,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Send request to Gateway
-    const response = await fetch(`${GATEWAY_URL}/authentication/login`, {
+    const response = await fetch(`${GATEWAY_URL}`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ email, password }),
@@ -24,7 +23,6 @@ export async function POST(req: NextRequest) {
 
     const data = await response.json();
 
-    // If login failed, return error
     if (!data.success) {
       return NextResponse.json(
         { error: data.message || "Invalid email or password." },
@@ -32,7 +30,6 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // If login successful, set cookie and return success
     const token = data.token;
     if (!token) {
       return NextResponse.json(
