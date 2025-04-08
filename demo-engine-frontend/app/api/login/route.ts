@@ -14,7 +14,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Forward the request to the NestJS Gateway authentication module
+    // Send request to Gateway
     const response = await fetch(`${GATEWAY_URL}/authentication/login`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -24,13 +24,15 @@ export async function POST(req: NextRequest) {
 
     const data = await response.json();
 
-    if (!response.ok) {
+    // If login failed, return error
+    if (!data.success) {
       return NextResponse.json(
-        { error: data.error || "Invalid email or password." },
+        { error: data.message || "Invalid email or password." },
         { status: response.status }
       );
     }
 
+    // If login successful, set cookie and return success
     const token = data.token;
     if (!token) {
       return NextResponse.json(
