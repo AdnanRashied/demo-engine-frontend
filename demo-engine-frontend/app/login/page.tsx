@@ -1,7 +1,7 @@
 "use client";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { logger } from "../lib/logger";
+import { logger } from "@/lib/logger";
 import Form from "@/components/Form";
 import Card from "@/components/Card";
 import TextField from "@/components/TextField";
