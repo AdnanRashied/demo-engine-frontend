@@ -1,24 +1,26 @@
 "use client";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { logger } from "../lib/logger";
 import Form from "@/components/Form";
 import Card from "@/components/Card";
-import { useRouter } from "next/navigation";
 import TextField from "@/components/TextField";
 import RoundButton from "@/components/RoundButton";
 
 export default function LoginPage() {
   const router = useRouter();
   const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
   const [error, setError] = useState("");
-  const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState("");
+  const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
     setError("");
     setSuccess("");
     setLoading(true);
+
     try {
       const response = await fetch("/api/login", {
         method: "POST",
@@ -27,27 +29,36 @@ export default function LoginPage() {
         credentials: "include",
       });
 
+      logger.log("Response from Gateway:", response);
+
+      const responseClone = response.clone();
+      const rawBody = await responseClone.text();
+
+      logger.log("Response Status:", response.status);
+
       if (!response.ok) {
-        // Try to parse the error response, but catch JSON parse errors
-        let errorMessage = "Login failed. Try again.";
-        try {
-          const data = await response.json();
-          errorMessage = data.error || errorMessage;
-        } catch (jsonError) {
-          console.error("Error parsing JSON response", jsonError);
-        }
-        throw new Error(errorMessage);
+        const message = rawBody || "Login failed. Try again.";
+        setError(message);
+        throw new Error(message);
       }
 
-      setSuccess("Login successful!");
-      router.push("/dashboard");
+      const data = await response.json();
+
+      if (data.success) {
+        setSuccess("Login successful!");
+        router.push("/dashboard");
+      } else {
+        setError(data.message || "Invalid credentials");
+        throw new Error(data.message || "Invalid credentials");
+      }
     } catch (err) {
       if (err instanceof Error) {
         setError(err.message);
+        logger.error("Login error:", err.message);
       } else {
         setError("An unexpected error occurred. Please try again.");
       }
-      console.error("Login error:", err);
+      logger.error("Unexpected login error:", err);
     } finally {
       setLoading(false);
     }
