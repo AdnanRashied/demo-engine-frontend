@@ -1,7 +1,8 @@
-import { defineConfig } from "vitest/config";
+import { defineConfig } from "vite";
 
 export default defineConfig({
   test: {
-    include: ["__tests__/api/**/*.test.ts"], // Looks for .test.ts files inside __tests__/api
+    globals: true, // Enable globals like `vi` and `expect`
+    environment: "jsdom", // Use jsdom for simulating a browser environment
   },
 });
