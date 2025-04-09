@@ -9,6 +9,7 @@ interface RoundButtonProps {
   onClick?: () => void;
   type?: "button" | "submit" | "reset";
   disabled?: boolean;
+  className?: string;
 }
 
 const RoundButton: React.FC<RoundButtonProps> = ({
