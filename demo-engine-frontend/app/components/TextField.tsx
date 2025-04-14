@@ -9,6 +9,7 @@ interface TextFieldProps {
   onChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
   placeholder?: string;
   errorMessage?: string;
+  className?: string;
 }
 
 const TextField: React.FC<TextFieldProps> = ({
@@ -18,6 +19,7 @@ const TextField: React.FC<TextFieldProps> = ({
   onChange,
   placeholder,
   errorMessage = "",
+  className = "w-full mb-2 p-2 mt-1 border rounded-md focus:ring-2 focus:ring-emerald-500 focus:outline-none",
 }) => {
   return (
     <div className="w-full">
@@ -27,7 +29,7 @@ const TextField: React.FC<TextFieldProps> = ({
         value={value}
         onChange={onChange}
         placeholder={placeholder}
-        className="w-full p-2 mt-1 border rounded-md focus:ring-2 focus:ring-emerald-500 focus:outline-none"
+        className={className}
       />
       {errorMessage && (
         <p className="text-red-500 text-sm mt-1">{errorMessage}</p>
