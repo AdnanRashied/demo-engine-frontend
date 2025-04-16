@@ -82,7 +82,7 @@ export default function LoginPage() {
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="you@example.com"
+              placeholder="Place your email"
               errorMessage={error}
             />
             <TextField
