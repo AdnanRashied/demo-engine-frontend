@@ -1,9 +1,9 @@
 "use client";
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { logger } from "@/lib/logger";
 import Form from "@/components/Form";
 import Card from "@/components/Card";
+import { useRouter } from "next/navigation";
 import TextField from "@/components/TextField";
 import RoundButton from "@/components/RoundButton";
 
@@ -29,13 +29,13 @@ export default function LoginPage() {
         credentials: "include",
       });
 
-      logger.log("Response from Gateway:", response);
+      logger.log("Response from Gateway from page.tsx:", response);
 
+      // Clone the response for logging raw body
       const responseClone = response.clone();
       const rawBody = await responseClone.text();
 
-      logger.log("Response Status:", response.status);
-
+      // Check if response is successful (i.e., in the 2xx range)
       if (!response.ok) {
         const message = rawBody || "Login failed. Try again.";
         setError(message);
@@ -43,7 +43,9 @@ export default function LoginPage() {
       }
 
       const data = await response.json();
+      console.log(data);
 
+      // Handling the response from the Gateway
       if (data.success) {
         setSuccess("Login successful!");
         router.push("/dashboard");

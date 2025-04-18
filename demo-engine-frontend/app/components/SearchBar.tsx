@@ -10,13 +10,16 @@ export default function SearchBar({
   onSearch,
 }: SearchBarProps) {
   return (
-    <div className="flex items-center gap-2">
+    <div
+      className="flex items-center gap-1
+    "
+    >
       <input
         type="text"
         placeholder="Search User"
         value={value}
         onChange={onChange}
-        className="px-4 py-2 rounded-full w-full text-black outline-none"
+        className="w-full px-4 py-2 bg-white text-black border border-gray-300 rounded-full shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
       />
       <button
         onClick={() => onSearch(value)}

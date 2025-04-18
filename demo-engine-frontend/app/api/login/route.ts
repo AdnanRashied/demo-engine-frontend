@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 
-const GATEWAY_URL = process.env.GATEWAY_URL || "http://localhost:4000";
+const GATEWAY_URL = process.env.GATEWAY_URL_AUTHENTICATION_LOGIN;
 
 export async function POST(req: NextRequest) {
   try {
@@ -12,13 +12,14 @@ export async function POST(req: NextRequest) {
         { status: 400 }
       );
     }
-
-    const response = await fetch(`${GATEWAY_URL}/authentication/login`, {
+    console.log("Login request starting...");
+    const response = await fetch(`${GATEWAY_URL}`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ email, password }),
       credentials: "include",
     });
+    console.log("Response received", response.status);
 
     const data = await response.json();
     console.log("📥 Received response from gateway:", {
@@ -41,12 +42,11 @@ export async function POST(req: NextRequest) {
       { success: true, name, role },
       { status: 200 }
     );
-
     res.headers.append(
       "Set-Cookie",
       `auth_token=${token}; HttpOnly; Secure=${
         process.env.NODE_ENV === "production"
-      }; SameSite=Strict; Path=/; Max-Age=${60 * 60 * 24 * 7}`
+      }; SameSite=Lax; Path=/; Max-Age=${60 * 60 * 24 * 7}`
     );
 
     return res;
