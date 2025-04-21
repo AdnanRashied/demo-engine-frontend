@@ -28,8 +28,9 @@ export async function POST(req: NextRequest) {
     });
 
     const token = data.token || data.access_token;
-    const name = data.name || "Unknown";
-    const role = data.role || "User";
+    const name = data.name || "unknown";
+    const role =
+      typeof data.role === "string" ? data.role.toLowerCase() : "user";
 
     if (!token) {
       return NextResponse.json(
