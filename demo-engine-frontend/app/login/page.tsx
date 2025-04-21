@@ -1,11 +1,12 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { logger } from "@/lib/logger";
 import Form from "@/components/Form";
 import Card from "@/components/Card";
 import { useRouter } from "next/navigation";
 import TextField from "@/components/TextField";
 import RoundButton from "@/components/RoundButton";
+import { getToken, isTokenExpired, clearToken } from "../lib/util/tokenUtil";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -14,6 +15,15 @@ export default function LoginPage() {
   const [success, setSuccess] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    const token = getToken();
+    if (token && !isTokenExpired(token)) {
+      router.push("/dashboard"); // ✅ Redirect only if the user is already logged in
+    } else {
+      clearToken(); // 🧼 Clear old/expired token
+    }
+  }, []);
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
@@ -31,11 +41,9 @@ export default function LoginPage() {
 
       logger.log("Response from Gateway from page.tsx:", response);
 
-      // Clone the response for logging raw body
       const responseClone = response.clone();
       const rawBody = await responseClone.text();
 
-      // Check if response is successful (i.e., in the 2xx range)
       if (!response.ok) {
         const message = rawBody || "Login failed. Try again.";
         setError(message);
@@ -45,7 +53,6 @@ export default function LoginPage() {
       const data = await response.json();
       console.log(data);
 
-      // Handling the response from the Gateway
       if (data.success) {
         setSuccess("Login successful!");
         router.push("/dashboard");
@@ -67,7 +74,7 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center  p-4 bg-[#013e28]">
+    <div className="flex min-h-screen items-center justify-center p-4 bg-[#013e28]">
       <Card
         backgroundColor="bg-emerald-900"
         borderColor="border-yellow-500"

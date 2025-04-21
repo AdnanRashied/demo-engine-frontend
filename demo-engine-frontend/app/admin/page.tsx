@@ -43,7 +43,6 @@ export default function AdminDashboard() {
       if (!data.success) {
         throw new Error(data.message || "Failed to register user.");
       }
-
       setName("");
       setRole("");
       setEmail("");
