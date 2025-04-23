@@ -43,16 +43,12 @@ const Dashboard = () => {
 
       {/* Main Content */}
       <main className="p-6 flex-grow">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          <DashboardCards></DashboardCards>
-
-          {/* Card 1 */}
-        </div>
+        <DashboardCards></DashboardCards>
       </main>
 
       {/* Footer */}
       <footer className="bg-emerald-900 py-4 px-6 text-center">
-        <p>© 2024 My Dashboard. All rights reserved.</p>
+        <p>© 2025 My Dashboard. All rights reserved.</p>
       </footer>
     </div>
   );
