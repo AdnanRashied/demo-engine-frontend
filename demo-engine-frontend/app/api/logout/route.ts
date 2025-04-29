@@ -6,7 +6,6 @@ export async function GET() {
     { status: 200 }
   );
 
-  // Clear the auth token cookie
   response.headers.append(
     "Set-Cookie",
     `auth_token=; HttpOnly; Secure=${

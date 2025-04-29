@@ -19,7 +19,6 @@ export async function POST(req: NextRequest) {
       body: JSON.stringify({ email, password }),
       credentials: "include",
     });
-    console.log("Response received", response.status);
 
     const data = await response.json();
     console.log("📥 Received response from gateway:", {
