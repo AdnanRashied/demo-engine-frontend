@@ -10,8 +10,8 @@ if (!JWT_SECRET) {
 }
 
 export async function middleware(request: NextRequest) {
-  console.log("✅ Middleware is executing");
   const token = request.cookies.get("auth_token")?.value;
+
   const { pathname } = request.nextUrl;
 
   if (token) {
@@ -27,10 +27,7 @@ export async function middleware(request: NextRequest) {
       const role =
         typeof payload?.role === "string" ? payload.role.toLowerCase() : "";
 
-      console.log(`🧪 Role from token: ${role}, Path: ${pathname}`);
-
       if (!role) {
-        console.warn("⚠️ Missing or invalid role in token.");
         return NextResponse.redirect(new URL("/login", request.url));
       }
 
@@ -39,15 +36,11 @@ export async function middleware(request: NextRequest) {
       }
 
       if (pathname.startsWith("/admin") && role !== "admin") {
-        console.warn("🔒 BLOCKED non-admin from /admin:", role);
         return NextResponse.redirect(new URL("/unauthorized", request.url));
       }
 
       return NextResponse.next();
     } catch (err) {
-      // Catch token verification failure
-      console.error("JWT verification failed:", err);
-
       // Invalidate the token by removing it from the cookies
       const response = NextResponse.redirect(new URL("/login", request.url));
       response.cookies.delete("auth_token"); // Remove invalid token
@@ -57,7 +50,6 @@ export async function middleware(request: NextRequest) {
 
   // Handle unauthenticated access to protected routes
   if (pathname.startsWith("/admin") || pathname.startsWith("/dashboard")) {
-    console.warn("🔒 BLOCKED unauthenticated access to:", pathname);
     return NextResponse.redirect(new URL("/login", request.url));
   }
 
