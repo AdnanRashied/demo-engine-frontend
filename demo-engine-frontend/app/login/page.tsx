@@ -1,32 +1,53 @@
 "use client";
 import { useState, useEffect } from "react";
-import { logger } from "@/lib/logger";
+import { useRouter } from "next/navigation";
 import Form from "@/components/Form";
 import Card from "@/components/Card";
-import { useRouter } from "next/navigation";
 import TextField from "@/components/TextField";
 import RoundButton from "@/components/RoundButton";
-import { getToken, isTokenExpired, clearToken } from "../lib/util/tokenUtil";
 
 export default function LoginPage() {
   const router = useRouter();
   const [email, setEmail] = useState("");
-  const [error, setError] = useState("");
-  const [success, setSuccess] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [csrfToken, setCsrfToken] = useState("");
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
+
+  const fetchCsrfToken = async () => {
+    const csrfUrl = process.env.NEXT_PUBLIC_GATEWAY_URL_AUTHENTICATION_CSRF;
+    if (!csrfUrl) {
+      setError("CSRF URL environment variable is not defined.");
+      return;
+    }
+
+    try {
+      const res = await fetch(csrfUrl, {
+        method: "GET",
+        credentials: "include",
+      });
+
+      if (!res.ok) {
+        throw new Error(`HTTP error fetching CSRF: ${res.status}`);
+      }
+      const data = await res.json();
+      setCsrfToken(data.csrfToken);
+    } catch (err) {
+      setError("Failed to initialize login. Please refresh the page.");
+    }
+  };
 
   useEffect(() => {
-    const token = getToken();
-    if (token && !isTokenExpired(token)) {
-      router.push("/dashboard"); // ✅ Redirect only if the user is already logged in
-    } else {
-      clearToken(); // 🧼 Clear old/expired token
-    }
+    fetchCsrfToken();
   }, []);
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
+    if (!csrfToken) {
+      setError("CSRF token not available. Please refresh the page.");
+      return;
+    }
     setError("");
     setSuccess("");
     setLoading(true);
@@ -34,25 +55,22 @@ export default function LoginPage() {
     try {
       const response = await fetch("/api/login", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          "X-CSRF-Token": csrfToken,
+        },
         body: JSON.stringify({ email, password }),
         credentials: "include",
       });
 
-      logger.log("Response from Gateway from page.tsx:", response);
-
-      const responseClone = response.clone();
-      const rawBody = await responseClone.text();
-
       if (!response.ok) {
-        const message = rawBody || "Login failed. Try again.";
+        const data = await response.json();
+        const message = data.message || "Login failed. Try again.";
         setError(message);
         throw new Error(message);
       }
 
       const data = await response.json();
-      console.log(data);
-
       if (data.success) {
         setSuccess("Login successful!");
         router.push("/dashboard");
@@ -61,13 +79,11 @@ export default function LoginPage() {
         throw new Error(data.message || "Invalid credentials");
       }
     } catch (err) {
-      if (err instanceof Error) {
-        setError(err.message);
-        logger.error("Login error:", err.message);
-      } else {
-        setError("An unexpected error occurred. Please try again.");
-      }
-      logger.error("Unexpected login error:", err);
+      setError(
+        err instanceof Error
+          ? err.message
+          : "An unexpected error occurred. Please try again."
+      );
     } finally {
       setLoading(false);
     }
@@ -107,7 +123,7 @@ export default function LoginPage() {
                 color="bg-yellow-500"
                 width="w-100"
                 type="submit"
-                disabled={loading}
+                disabled={loading || !csrfToken}
               />
             </div>
           </Form>
