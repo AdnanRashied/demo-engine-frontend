@@ -12,46 +12,71 @@ export async function POST(req: NextRequest) {
         { status: 400 }
       );
     }
-    console.log("Login request starting...");
+
     const response = await fetch(`${GATEWAY_URL}`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        "X-CSRF-Token": req.headers.get("X-CSRF-Token") || "",
+        Cookie: req.headers.get("cookie") || "",
+      },
       body: JSON.stringify({ email, password }),
       credentials: "include",
     });
 
     const data = await response.json();
-    console.log("📥 Received response from gateway:", {
-      status: response.status,
-      body: data,
-    });
 
-    const token = data.token || data.access_token;
-    const name = data.name || "unknown";
-    const role =
-      typeof data.role === "string" ? data.role.toLowerCase() : "user";
-
-    if (!token) {
+    if (!response.ok || !data.success) {
       return NextResponse.json(
         { error: data.message || "Invalid email or password." },
-        { status: 401 }
+        { status: response.status || 401 }
+      );
+    }
+
+    const setCookieHeaders =
+      response.headers.get("set-cookie")?.split(", ") || [];
+    let authToken = "";
+    let refreshToken = "";
+    for (const cookie of setCookieHeaders) {
+      if (cookie.startsWith("auth_token=")) {
+        authToken = cookie.split(";")[0].split("auth_token=")[1];
+      } else if (cookie.startsWith("refresh_token=")) {
+        refreshToken = cookie.split(";")[0].split("refresh_token=")[1];
+      }
+    }
+
+    if (!authToken || !refreshToken) {
+      return NextResponse.json(
+        { error: "Authentication tokens not received." },
+        { status: 500 }
       );
     }
 
     const res = NextResponse.json(
-      { success: true, name, role },
+      {
+        success: true,
+        name: data.name || "unknown",
+        role: data.role || "user",
+      },
       { status: 200 }
     );
-    res.headers.append(
-      "Set-Cookie",
-      `auth_token=${token}; HttpOnly; Secure=${
-        process.env.NODE_ENV === "production"
-      }; SameSite=Lax; Path=/; Max-Age=${60 * 60 * 24 * 7}`
-    );
+    res.cookies.set("auth_token", authToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      maxAge: 60 * 60 * 1000, // 1 hour
+      path: "/",
+    });
+    res.cookies.set("refresh_token", refreshToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+      path: "/",
+    });
 
     return res;
   } catch (error) {
-    console.error("❌ Error in login route:", error);
     return NextResponse.json(
       { error: "Something went wrong. Please try again." },
       { status: 500 }
