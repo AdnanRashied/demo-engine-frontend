@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 
-const GATEWAY_URL = process.env.GATEWAY_URL_AUTHENTICATION_LOGIN;
+const GATEWAY_URL = process.env.NEXT_PUBLIC_GATEWAY_URL_AUTHENTICATION_LOGIN;
 
 export async function POST(req: NextRequest) {
   try {
