@@ -30,9 +30,9 @@ export default function Navbar() {
         }
         const data = await res.json();
         setUserDetails({
-          name: data.name || "",
-          email: data.email || "",
-          img: data.img || "",
+          name: data.name || "User",
+          email: data.email || "user@email.com",
+          img: data.img || "user",
         });
       } catch (err) {
         setError("Failed to load user details.");
