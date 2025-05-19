@@ -1,77 +1,49 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useUser } from "@/context/UserContext";
 import RoundButton from "@/components/RoundButton";
 
 export default function Navbar() {
   const router = useRouter();
-  const [csrfToken, setCsrfToken] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
-  const [userDetails, setUserDetails] = useState({
-    name: "",
-    email: "",
-    img: "",
-  });
+  const {
+    userDetails,
+    loading: contextLoading,
+    error: contextError,
+    setUserDetails,
+  } = useUser();
 
-  useEffect(() => {
-    const fetchUserDetails = async () => {
-      const readUser = process.env.NEXT_PUBLIC_GATEWAY_URL_AUTHENTICATION_READ;
-      if (!readUser) {
-        throw new Error("URL for reading user data is undefined.");
-      }
-      try {
-        const res = await fetch(`${readUser}`, {
-          method: "GET",
-          credentials: "include",
-        });
-        if (!res.ok) {
-          throw new Error(`HTTP error! Status: ${res.status}`);
-        }
-        const data = await res.json();
-        setUserDetails({
-          name: data.name || "User",
-          email: data.email || "user@email.com",
-          img: data.img || "user",
-        });
-      } catch (err) {
-        setError("Failed to load user details.");
-      }
-    };
-    fetchUserDetails();
-  }, []);
+  const [csrfToken, setCsrfToken] = useState("");
+  const [logoutLoading, setLogoutLoading] = useState(false);
+  const [logoutError, setLogoutError] = useState("");
 
   const fetchCsrfToken = async () => {
     const fetchToken = process.env.NEXT_PUBLIC_GATEWAY_URL_AUTHENTICATION_CSRF;
     if (!fetchToken) {
-      throw new Error("URL is for fetching token is not defined");
+      throw new Error("URL for fetching token is not defined");
     }
     try {
       const res = await fetch(`${fetchToken}`, {
         method: "GET",
         credentials: "include",
       });
-      if (!res.ok) {
-        throw new Error(`HTTP error! Status: ${res.status}`);
-      }
+      if (!res.ok) throw new Error(`HTTP error! Status: ${res.status}`);
       const data = await res.json();
       setCsrfToken(data.csrfToken);
       return data.csrfToken;
     } catch (err) {
-      setError("Failed to initialize logout. Please try again.");
+      setLogoutError("Failed to initialize logout. Please try again.");
       return "";
     }
   };
 
   const handleLogout = async () => {
-    setLoading(true);
-    setError("");
+    setLogoutLoading(true);
+    setLogoutError("");
 
     try {
       const token = await fetchCsrfToken();
-      if (!token) {
-        throw new Error("CSRF token not available.");
-      }
+      if (!token) throw new Error("CSRF token not available.");
 
       const response = await fetch("/api/logout", {
         method: "POST",
@@ -90,6 +62,7 @@ export default function Navbar() {
 
       const data = await response.json();
       if (data.success) {
+        setUserDetails({ name: "", email: "", img: "" });
         router.push("/login");
       } else {
         throw new Error(data.message || "Logout failed.");
@@ -99,25 +72,31 @@ export default function Navbar() {
         err instanceof Error
           ? err.message
           : "Something went wrong. Please try again.";
-      setError(errorMessage);
+      setLogoutError(errorMessage);
     } finally {
-      setLoading(false);
+      setLogoutLoading(false);
     }
   };
 
   const handleSettings = () => {
-    // Placeholder for settings navigation after Redis
+    router.push("/settings");
   };
 
   return (
     <nav className="bg-emerald-900 text-white p-4">
       <div className="flex justify-end items-center gap-4">
-        <img
-          src={userDetails.img}
-          alt="User profile"
-          className="w-8 h-8 rounded-full"
-        />
-        <span className="mr-4">{userDetails.name || "User"}</span>
+        {userDetails.img ? (
+          <img
+            src={userDetails.img}
+            alt="User profile"
+            className="w-8 h-8 rounded-full"
+          />
+        ) : (
+          <div className="w-8 h-8 rounded-full bg-gray-500" />
+        )}
+        <span className="mr-4">
+          {contextLoading ? "Loading..." : userDetails.name || "User"}
+        </span>
         <RoundButton
           text="Settings"
           color="bg-blue-500"
@@ -125,13 +104,15 @@ export default function Navbar() {
           onClick={handleSettings}
         />
         <RoundButton
-          text={loading ? "Logging out..." : "Logout"}
+          text={logoutLoading ? "Logging out..." : "Logout"}
           color="bg-yellow-500"
           width="w-24"
           onClick={handleLogout}
-          disabled={loading}
+          disabled={logoutLoading}
         />
-        {error && <p className="text-red-500 mt-2">{error}</p>}
+        {(contextError || logoutError) && (
+          <p className="text-red-500 mt-2">{contextError || logoutError}</p>
+        )}
       </div>
     </nav>
   );
